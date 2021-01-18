@@ -56,7 +56,7 @@ public:
         neuronalLayers.front()->set_block(0, 0, 1, neuronalLayers.front()->data.size() - 1, in);
 
         for (int i = 1; i < this->topology.size(); i++)
-            (*neuronalLayers[i]) = MMULT(neuronalLayers[i - 1], weights[i - 1]);
+            (*neuronalLayers[i]) = MMULT(*neuronalLayers[i - 1], *weights[i - 1]);
 
         //need to apply activation function to all elements of the current layer
         //auto the activation function
@@ -65,10 +65,24 @@ public:
             std::for_each(cachingLayers[i]->data.begin(), cachingLayers[i]->data.begin() + topology[i], activ_func),
             std::transform(cachingLayers[i]->data.begin(), cachingLayers[i]->data.begin() + topology[i], neuronalLayers[i]->data.begin(),
                 [](double & n) { return n;});
+
     }
-    void propagateBackward(RowVector & out);
-    void calcErrors(RowVector & out);
-    void updateWeights();
+
+    void propagateBackward(RowVector & out) {
+        calcErrors(out);
+        updateWeights();
+    }
+
+    void calcErrors(RowVector & out) {
+        (*deltas.back()) = MSUB(out, (*neuronalLayers.back()));
+
+        for (int i = topology.size() - 2; i > 0; i--) {
+            (*deltas[i]) = MMULT(*deltas[i + 1], (weights[i]->transpose()));
+        }
+    }
+    void updateWeights() {
+
+    }
     void train(std::vector<RowVector *> data);
     std::vector<RowVector *> neuronalLayers;
     std::vector<RowVector *> cachingLayers;

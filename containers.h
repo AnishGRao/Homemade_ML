@@ -84,5 +84,13 @@ public:
             }
         }
     }
+
+    Matrix transpose() {
+        Matrix ret(this->data.size(), this->data[0].size());
+        for (int i = 0; i < this->data[0].size(); ++i)
+            for (int j = 0; j < this->data.size(); ++j)
+                ret.data[i][j] = this->data[i][j];
+        return ret;
+    }
 };
 

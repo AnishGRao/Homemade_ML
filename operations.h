@@ -2,15 +2,15 @@
 RowVector MMULT(RowVector * A, RowVector * B) {
     ;
 }
-RowVector MMULT(RowVector * A, Matrix * B) {
-    RowVector ret(A->data.size());
+RowVector MMULT(RowVector A, Matrix B) {
+    RowVector ret(A.data.size());
     ret.set_zero();
     //iter over cols
-    for (int i = 0; i < A->data.size(); i++) {
+    for (int i = 0; i < A.data.size(); i++) {
         int k = 0;
         //iter over rows
-        for (auto row : (B->data)) {
-            ret.data[i] += row[i] * A->data[k++];
+        for (auto row : (B.data)) {
+            ret.data[i] += row[i] * A.data[k++];
         }
     }
     return ret;
@@ -22,6 +22,14 @@ RowVector MMULT(Matrix * A, RowVector * B) {
 
 RowVector MMULT(Matrix * A, Matrix * B) {
     ;
+}
+
+RowVector MSUB(RowVector A, RowVector B) {
+    RowVector ret(A.data.size());
+    for (int i = 0; i < A.data.size(); i++) {
+        ret.data[i] = A.data[i] - B.data[i];
+    }
+    return ret;
 }
 
 
