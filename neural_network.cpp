@@ -9,6 +9,10 @@ public:
     double activationFunction(double num) {
         return (double) tanhf(num);
     }
+
+    double activationFunctionDerivative(double num) {
+        return 1 - tanhf(num) * tanhf(num);
+    }
     //todo:
     //make topology ints for speed
     NeuralNetwork(std::vector<uint> topology, float lr = (float) .05) {
@@ -81,9 +85,20 @@ public:
         }
     }
     void updateWeights() {
+        bool top;
+        for (int i = 0; i < topology.size() - 1; i++) {
+            top = i != (topology.size() - 2);
+            for (int j = 0; j < weights[i]->data[0].size() - top; j++)
+                for (int k = 0; k < weights[i]->data.size(); k++)
+                    weights[i]->data[k][j] += lr * deltas[i + 1]->data[j] * activationFunctionDerivative(cachingLayers[i + 1]->data[j]) * neuronalLayers[i]->data(k);
 
+        }
     }
-    void train(std::vector<RowVector *> data);
+    void train(std::vector<RowVector *> input_data, std::vector<RowVector *> output_data) {
+        for (int i = 0; i < input_data.size(); i++) {
+            std::cout << "Input: "
+        }
+    }
     std::vector<RowVector *> neuronalLayers;
     std::vector<RowVector *> cachingLayers;
     std::vector<RowVector *> deltas;
