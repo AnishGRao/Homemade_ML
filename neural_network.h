@@ -8,7 +8,7 @@ public:
     std::vector<RowVector> cachingLayers;
     std::vector<RowVector> deltas;
     std::vector<Matrix> weights;
-    std::vector<uint> topology;
+    std::vector<int> topology;
     float lr;
     double activationFunction(double num) {
         return (double) tanhf(num);
@@ -27,7 +27,7 @@ public:
         this->lr = other.lr;
     }
 
-    NeuralNetwork(std::vector<uint> topology, float lr = (float) .05) {
+    NeuralNetwork(std::vector<int> topology, float lr = (float) .05) {
         this->topology = topology;
         this->lr = lr;
         deltas.resize(topology.size());
@@ -115,7 +115,7 @@ public:
             std::cout << "Correct: " << output_data[i];
             std::cout << "Produced: " << neuronalLayers.back();
             propagateBackward(output_data[i]);
-            std::cout << "MSE: " << std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back().data.size()) << "\n";
+            std::cout << "MSE at iteration " << i << ": " << std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back().data.size()) << "\n\n";
         }
     }
 };

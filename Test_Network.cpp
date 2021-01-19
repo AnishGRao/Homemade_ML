@@ -21,5 +21,5 @@ int main() {
     ReadCsv("TOY_TEST-in", in_data);
     ReadCsv("TOY_TEST-out", out_data);
     NN.train(in_data, out_data);
-    return 0;
+    exit(0);
 }

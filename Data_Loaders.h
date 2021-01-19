@@ -23,10 +23,15 @@ void ReadCsv(std::string filename, std::vector<RowVector> & data) {
         data.back().data[i] = parser[i];
 
     if (file.is_open()) {
+        int k = 0;
         while (std::getline(file, line, '\n')) {
             std::stringstream ss(line);
             data.push_back(RowVector(nCols));
             int i = 0;
+            std::cout << k++ << "\n";
+            if (line == "0.835887,0.682699") {
+                std::cout << "break" << "\n";
+            }
             while (std::getline(ss, element, ',')) {
                 data.back().data[i++] = double(std::stod(&element[0]));
             }
