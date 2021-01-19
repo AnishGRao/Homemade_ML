@@ -11,11 +11,11 @@ public:
     std::vector<int> topology;
     float lr;
     double activationFunction(double num) {
-        return (double) tanhf(num);
+        return (double) num > 0 ? num : 0;
     }
 
     double activationFunctionDerivative(double num) {
-        return 1 - tanhf(num) * tanhf(num);
+        return (num <= 0) ? 0 : 1;
     }
 
     NeuralNetwork(const NeuralNetwork & other) {
@@ -27,7 +27,7 @@ public:
         this->lr = other.lr;
     }
 
-    NeuralNetwork(std::vector<int> topology, float lr = (float) .05) {
+    NeuralNetwork(std::vector<int> topology, float lr = (float) .01) {
         this->topology = topology;
         this->lr = lr;
         deltas.resize(topology.size());
@@ -108,14 +108,19 @@ public:
 
         }
     }
-    void train(std::vector<RowVector > input_data, std::vector<RowVector > output_data) {
+    void train(std::vector<RowVector *> input_data, std::vector<RowVector *> output_data) {
         for (int i = 0; i < input_data.size(); i++) {
-            std::cout << "Input: " << input_data[i];
-            propagateForward(input_data[i]);
-            std::cout << "Correct: " << output_data[i];
-            std::cout << "Produced: " << neuronalLayers.back();
-            propagateBackward(output_data[i]);
-            std::cout << "MSE at iteration " << i << ": " << std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back().data.size()) << "\n\n";
+            //std::cout << "Input: " << (*input_data[i]);
+            propagateForward(*input_data[i]);
+            //std::cout << "Correct: " << *output_data[i];
+            //std::cout << "Produced: " << neuronalLayers.back();
+            propagateBackward(*output_data[i]);
+            //std::cout << "MSE at iteration " << i << ": " << std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back().data.size()) << "\n\n";
+            //MSE GRAPH
+            for (int i = 0; i < ceil(std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back().data.size())); i++) {
+                std::cout << "X";
+            }
+            std::cout << std::endl;
         }
     }
 };

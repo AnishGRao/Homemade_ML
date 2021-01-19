@@ -32,7 +32,8 @@ public:
 
     //optional resize, and setting all values to a U distribution [-1,1]
     void set_random(int size = -1) {
-        std::default_random_engine generator;
+        std::random_device mch;
+        std::default_random_engine generator(mch());
         std::uniform_real_distribution<double> distribution(-1.0, 1.0);
         if (size != -1)
             this->resize(size);
@@ -96,14 +97,11 @@ public:
         //auto cRow = pick<row>(arg0, arg1);
         //auto cCol = pick<col>(arg0, arg1);
         //if (cCol == -1 && cRow == -1) {
-        std::default_random_engine generator;
+        std::random_device mch;
+        std::default_random_engine generator(mch());
         std::uniform_real_distribution<double> distribution(-1.0, 1.0);
-        std::vector<std::pair<int, int>> debug;
         for (int i = 0; i < this->data.size(); i++)
             for (int j = 0; j < this->data[0].size(); j++) {
-#ifdef ANISHDEBUG
-                debug.push_back({ i,j });
-#endif
                 this->data[i][j] = distribution(generator);
             }
         //}
