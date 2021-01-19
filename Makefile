@@ -3,4 +3,4 @@ all:
 debug:
 	g++ -g -ldl -pthread Test_Network.cpp -o ML.exe -lncurses;
 clean:
-	rm *.o *.exe
+	rm -f -- *.o *.exe *.txt; clear;

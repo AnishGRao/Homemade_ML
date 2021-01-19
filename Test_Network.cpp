@@ -16,7 +16,7 @@ void generate_data(std::string filename) {
 
 int main() {
     NeuralNetwork NN({ 2,3,1 });
-    std::vector<RowVector *> in_data, out_data;
+    std::vector<RowVector> in_data, out_data;
     generate_data("TOY_TEST");
     ReadCsv("TOY_TEST-in", in_data);
     ReadCsv("TOY_TEST-out", out_data);

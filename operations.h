@@ -1,8 +1,4 @@
 #include "containers.h"
-RowVector MMULT(RowVector * A, RowVector * B) {
-    ;
-}
-
 RowVector MMULT(RowVector A, Matrix B) {
     RowVector ret(A.data.size());
     ret.set_zero();
@@ -17,14 +13,6 @@ RowVector MMULT(RowVector A, Matrix B) {
     return ret;
 }
 
-RowVector MMULT(Matrix * A, RowVector * B) {
-    ;
-}
-
-RowVector MMULT(Matrix * A, Matrix * B) {
-    ;
-}
-
 RowVector MSUB(RowVector A, RowVector B) {
     RowVector ret(A.data.size());
     for (int i = 0; i < A.data.size(); i++) {
@@ -33,9 +21,9 @@ RowVector MSUB(RowVector A, RowVector B) {
     return ret;
 }
 
-double DPROD(RowVector * A, RowVector * B) {
+double DPROD(RowVector A, RowVector B) {
     double ret = 0;
-    for (auto a = A->data.begin(), b = B->data.begin(); a != A->data.end() && b != B->data.end(); a++, b++)
+    for (auto a = A.data.begin(), b = B.data.begin(); a != A.data.end() && b != B.data.end(); a++, b++)
         ret += (*a) * (*b);
     return ret;
 }

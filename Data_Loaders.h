@@ -1,6 +1,6 @@
 #include "operations.h"
 
-void ReadCsv(std::string filename, std::vector<RowVector *> & data) {
+void ReadCsv(std::string filename, std::vector<RowVector> & data) {
     //if there are multi-passes
     data.clear();
     std::ifstream file(filename);
@@ -18,17 +18,17 @@ void ReadCsv(std::string filename, std::vector<RowVector *> & data) {
         parser.push_back(double(std::stod(&element[0])));
     }
     int nCols = parser.size();
-    data.push_back(new RowVector(nCols));
+    data.push_back(RowVector(nCols));
     for (int i = 0; i < nCols; i++)
-        data.back()->data[i] = parser[i];
+        data.back().data[i] = parser[i];
 
     if (file.is_open()) {
         while (std::getline(file, line, '\n')) {
             std::stringstream ss(line);
-            data.push_back(new RowVector(nCols));
+            data.push_back(RowVector(nCols));
             int i = 0;
             while (std::getline(ss, element, ',')) {
-                data.back()->data[i++] = double(std::stod(&element[0]));
+                data.back().data[i++] = double(std::stod(&element[0]));
             }
         }
     }

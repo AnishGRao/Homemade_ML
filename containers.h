@@ -8,9 +8,21 @@
 class RowVector {
 public:
     std::vector<double> data;
+    RowVector() {
+        ;
+    }
     RowVector(int size) {
         data.resize(size);
     };
+    RowVector(const RowVector & other) {
+        this->data = other.data;
+    }
+    RowVector & operator= (const RowVector & other) {
+        if (this->data != other.data) {
+            this->data = other.data;
+        }
+        return *this;
+    }
 
     //simple resize
     void resize(int size = 1) {
@@ -60,6 +72,25 @@ public:
     Matrix(int rows = 1, int cols = 1) {
         data.resize(rows, std::vector<double>(cols, 0));
     }
+    Matrix(const Matrix & other) {
+        this->data = other.data;
+    }
+    Matrix(const Matrix * other) {
+        this->data = other->data;
+    }
+    Matrix & operator= (const Matrix & other) {
+        if (this->data != other.data) {
+            this->data = other.data;
+        }
+        return *this;
+    }
+    Matrix & operator= (const Matrix * other) {
+        if (this->data != other->data) {
+            this->data = other->data;
+        }
+        return *this;
+    }
+
     //template <typename row, typename col>
     void setRandom() {
         //auto cRow = pick<row>(arg0, arg1);
@@ -99,6 +130,8 @@ public:
                 ret.data[i][j] = this->data[i][j];
         return ret;
     }
+
+
 };
 
 std::ostream & operator<< (std::ostream & out, const RowVector & r) {
