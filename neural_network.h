@@ -1,11 +1,15 @@
-#include "poker.h"
-#include "operations.h"
+#include "Data_Loaders.h"
 
 //will be constantly updated
 
 class NeuralNetwork {
 public:
-
+    std::vector<RowVector *> neuronalLayers;
+    std::vector<RowVector *> cachingLayers;
+    std::vector<RowVector *> deltas;
+    std::vector<Matrix *> weights;
+    std::vector<uint> topology;
+    float lr;
     double activationFunction(double num) {
         return (double) tanhf(num);
     }
@@ -13,20 +17,21 @@ public:
     double activationFunctionDerivative(double num) {
         return 1 - tanhf(num) * tanhf(num);
     }
-    //todo:
-    //make topology ints for speed
+
+
+
     NeuralNetwork(std::vector<uint> topology, float lr = (float) .05) {
         this->topology = topology;
         this->lr = lr;
         for (auto i = 0; i < topology.size(); i++) {
             //todo replace with:
-            neuronalLayers.push_back(new RowVector(topology[i] + (i != (topology.size() + 1))));
+            //neuronalLayers.push_back(new RowVector(topology[i] + (i != (topology.size() + 1))));
 
             //neurons
-            //if (i == topology.size() - 1)
-            //    neuronalLayers.push_back(new RowVector(topology[i]));
-            //else
-            //    neuronalLayers.push_back(new RowVector(topology[i] + 1));
+            if (i == topology.size() - 1)
+                neuronalLayers.push_back(new RowVector(topology[i]));
+            else
+                neuronalLayers.push_back(new RowVector(topology[i] + 1));
 
             //initializations
             cachingLayers.push_back(new RowVector(neuronalLayers.size()));
@@ -45,7 +50,7 @@ public:
                     //todo maybe fix https://eigen.tuxfamily.org/dox/classEigen_1_1DenseBase.html#ac476e5852129ba32beaa1a8a3d7ee0db
                     weights.back()->setRandom();
                     //just set the rowvec to 0;
-                    weights.back()->setZero({ .col = topology[i] });
+                    weights.back()->setZero({ -1, topology[i] });
                     weights.back()->data[topology[i - 1]][topology[i]] = 1.0;
                 }
                 else {
@@ -57,10 +62,10 @@ public:
     };
 
     void propagateForward(RowVector & in) {
-        neuronalLayers.front()->set_block(0, 0, 1, neuronalLayers.front()->data.size() - 1, in);
+        cachingLayers.front()->set_block(0, 0, 1, neuronalLayers.front()->data.size() - 1, in);
 
         for (int i = 1; i < this->topology.size(); i++)
-            (*neuronalLayers[i]) = MMULT(*neuronalLayers[i - 1], *weights[i - 1]);
+            (*cachingLayers[i]) = MMULT(*cachingLayers[i - 1], *weights[i - 1]);
 
         //need to apply activation function to all elements of the current layer
         //auto the activation function
@@ -90,20 +95,18 @@ public:
             top = i != (topology.size() - 2);
             for (int j = 0; j < weights[i]->data[0].size() - top; j++)
                 for (int k = 0; k < weights[i]->data.size(); k++)
-                    weights[i]->data[k][j] += lr * deltas[i + 1]->data[j] * activationFunctionDerivative(cachingLayers[i + 1]->data[j]) * neuronalLayers[i]->data(k);
+                    weights[i]->data[k][j] += neuronalLayers[i]->data[k] * lr * deltas[i + 1]->data[j] * activationFunctionDerivative(cachingLayers[i + 1]->data[j]);
 
         }
     }
     void train(std::vector<RowVector *> input_data, std::vector<RowVector *> output_data) {
         for (int i = 0; i < input_data.size(); i++) {
-            std::cout << "Input: "
+            std::cout << "Input: " << *input_data[i];
+            propagateForward(*input_data[i]);
+            std::cout << "Correct: " << *output_data[i];
+            std::cout << "Produced: " << *neuronalLayers.back();
+            propagateBackward(*output_data[i]);
+            std::cout << "MSE: " << std::sqrt(DPROD(deltas.back(), deltas.back()) / deltas.back()->data.size()) << "\n";
         }
     }
-    std::vector<RowVector *> neuronalLayers;
-    std::vector<RowVector *> cachingLayers;
-    std::vector<RowVector *> deltas;
-    std::vector<Matrix *> weights;
-    std::vector<uint> topology;
-    float lr;
-private:
 };

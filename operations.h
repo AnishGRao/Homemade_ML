@@ -2,6 +2,7 @@
 RowVector MMULT(RowVector * A, RowVector * B) {
     ;
 }
+
 RowVector MMULT(RowVector A, Matrix B) {
     RowVector ret(A.data.size());
     ret.set_zero();
@@ -31,7 +32,6 @@ RowVector MSUB(RowVector A, RowVector B) {
     }
     return ret;
 }
-
 
 double DPROD(RowVector * A, RowVector * B) {
     double ret = 0;

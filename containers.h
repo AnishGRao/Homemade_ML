@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #include <random>
+#define ANISHDEBUG
+
 //always going to be updated
 //right now looking over pytorch elements in order to have strong linalg basis
 
@@ -65,9 +67,14 @@ public:
         //if (cCol == -1 && cRow == -1) {
         std::default_random_engine generator;
         std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+        std::vector<std::pair<int, int>> debug;
         for (int i = 0; i < this->data.size(); i++)
-            for (int j = 0; j < this->data[0].size(); i++)
+            for (int j = 0; j < this->data[0].size(); j++) {
+#ifdef ANISHDEBUG
+                debug.push_back({ i,j });
+#endif
                 this->data[i][j] = distribution(generator);
+            }
         //}
         //TODO add in the functionality for setzero for indiv. rows and cols.
     }
@@ -94,3 +101,10 @@ public:
     }
 };
 
+std::ostream & operator<< (std::ostream & out, const RowVector & r) {
+    out << "\n\n[ ";
+    for (auto i : r.data)
+        out << i << " ";
+    out << "]\n\n";
+    return out;
+}
