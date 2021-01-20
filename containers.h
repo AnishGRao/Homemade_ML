@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 #include <random>
+#include <math.h>
+#include <cmath>
+#include <variant>
 #define ANISHDEBUG
 
 //always going to be updated
@@ -120,7 +123,11 @@ public:
             }
         }
     }
-
+    void setZero() {
+        for (int i = 0; i < data.size(); i++)
+            for (int j = 0; j < data[0].size(); j++)
+                data[i][j] = 0;
+    }
     Matrix transpose() {
         Matrix ret(this->data.size(), this->data[0].size());
         for (int i = 0; i < this->data[0].size(); ++i)
@@ -128,6 +135,7 @@ public:
                 ret.data[i][j] = this->data[i][j];
         return ret;
     }
+
 
 
 };

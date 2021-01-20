@@ -1,6 +1,5 @@
-#include "Data_Loaders.h"
+#include "../Data_Loaders.h"
 
-//will be constantly updated
 
 class NeuralNetwork {
 public:
