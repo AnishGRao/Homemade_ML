@@ -83,6 +83,17 @@ class RNN {
         dbiash->setZero(), dbiasy->setZero();
         dhnext->setZero();
 
+        for (int t = inputs.size() - 1; t >= 0; t--) {
+            auto temp_dy = new Matrix(ps[t]);
+            //add -1 to all points in ps[t][targets[t]]'s copy
+            MSROWOP(&temp_dy, targets[t], 1, -1);
+            *dweightyh = MSUM(*dweightyh, std::get<Matrix>(DPROD(dweightyh, hs[t].transpose())));
+            *dbiasy = MSUM(*dbiasy, *temp_dy);
+            auto temp_dh = new Matrix(MSUM(std::get<Matrix>(DPROD(dweightyh->transpose(), *temp_dy)), dhnext));
+            auto temp_dhraw = new Matrix(
+
+            );
+        }
 
     }
     void init_RNN() {

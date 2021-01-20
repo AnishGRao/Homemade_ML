@@ -23,6 +23,8 @@ RowVector MMULT(RowVector A, Matrix B) {
     return ret;
 }
 
+Matrix MMULT(Matrix * A, Matrix * B) {
+}
 //matrix subtraction
 RowVector MSUB(RowVector A, RowVector B) {
     RowVector ret(A.data.size());
@@ -58,8 +60,18 @@ std::variant<Matrix, double> DPROD(Matrix & A, Matrix & B) {
                 ret.data[i][j] += A.data[i][k] * B.data[k][j];
     return ret.data.size() == 1 && ret.data[0].size() == 1 ? ret.data[0][0] : ret;
 }
-
-std::variant<Matrix, double> DPROD(Matrix * A, Matrix & B) {
+std::variant<Matrix, double> DPROD(Matrix A, Matrix B) {
+    //regular dprod stuff
+    auto ret = Matrix(A.data.size(), B.data[0].size());
+    ret.setZero();
+    //go through A's rows
+    for (int i = 0; i < A.data.size(); i++)
+        for (int j = 0; j < B.data[0].size(); j++)
+            for (int k = 0; k < A.data[0].size(); ++k)
+                ret.data[i][j] += A.data[i][k] * B.data[k][j];
+    return ret.data.size() == 1 && ret.data[0].size() == 1 ? ret.data[0][0] : ret;
+}
+std::variant<Matrix, double> DPROD(Matrix * A, Matrix B) {
     //regular dprod stuff
     auto ret = Matrix(A->data.size(), B.data[0].size());
     ret.setZero();
@@ -96,12 +108,33 @@ Matrix MSUM(Matrix A, Matrix * B) {
     return ret;
 }
 
+Matrix MSUM(Matrix A, Matrix * B) {
+    auto ret = Matrix(A.data.size(), A.data[0].size());
+    for (int i = 0; i < A.data.size(); i++)
+        for (int j = 0; j < A.data[0].size(); j++)
+            ret.data[i][j] = A.data[i][j] + B->data[i][j];
+    return ret;
+}
+
 Matrix MAPPLY(Matrix A, double (*func)(double)) {
     auto ret = A;
     for (int i = 0; i < A.data.size(); i++)
         for (int j = 0; j < A.data[0].size(); j++)
             ret.data[i][j] = (*func)(ret.data[i][j]);
     return ret;
+}
+
+void MSROWOP(Matrix ** A, int row, int operation, int scalar) {
+    switch (operation) {
+        //addition
+    case 1:
+        for (int i = 0; i < (*A)->data[0].size(); i++) {
+            (*A)->data[row][i] += scalar;
+            break;
+        }
+        break;
+    default: break;
+    }
 }
 
 //dot product of two row vectors
