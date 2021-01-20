@@ -50,34 +50,39 @@ class RNN {
     }
 
     void loss(std::vector <int> & inputs, std::vector<int> & targets, Matrix & hprev) {
-        std::vector<Matrix> xs = {}, hs = {}, ys = {}, ps = {};
-        hs.push_back(hprev);
-
-        double loss = 0;
+        std::unordered_map<int, Matrix> xs = {}, hs = {}, ys = {}, ps = {};
+        hs[-1] = (hprev);
+        double loss = 0, temp_val;
         for (int t = 0; t < inputs.size(); t++) {
-            xs.push_back(Matrix(vocab_size, 1));
-            xs.back().setZero();
-            xs.back().data[inputs[t]][0] = 1;
+            xs[t] = Matrix(vocab_size, 1);
+            xs[t].setZero();
+            xs[t].data[inputs[t]][0] = 1;
             //hidden state
-            hs.push_back(
+            hs[t] = (
                 MAPPLY(
                     MSUM(
                         MSUM(
-                            std::get<Matrix>(
-                                DPROD(weight_x_hidden, xs[t])
-                                ),
-                            std::get<Matrix>(
-                                DPROD(weight_hidden_time, (t == 0 ? hs.back() : hs[t - 1]))
-                                )
+                            std::get<Matrix>(DPROD(weight_x_hidden, xs[t])),
+                            std::get<Matrix>(DPROD(weight_hidden_time, hs[t - 1]))
                         )
                         , bias_hidden),
                     &TANH
                 )
             );
             ys[t] = std::get<Matrix>(DPROD(weight_y_hidden, hs[t]));
-            //ps[t] =
-
+            ps[t] = SMUL(MAPPLY(ys[t], &EXP), 1 / (MTOTSUM(MAPPLY(ys[t], &EXP))));
+            //TODO check if nat log
+            loss += -log(ps[t].data[targets[t]][0]);
         }
+        //wow more stuff, how fun.
+        Matrix * dweightxh = new Matrix(weight_x_hidden), * dweightyh = new Matrix(weight_y_hidden),
+            * dweighthh = new Matrix(weight_hidden_time), * dbiash = new Matrix(bias_hidden),
+            * dbiasy = new Matrix(bias_y), * dhnext = new Matrix(hs[0]);
+
+        dweighthh->setZero(), dweightxh->setZero(), dweightyh->setZero();
+        dbiash->setZero(), dbiasy->setZero();
+        dhnext->setZero();
+
 
     }
     void init_RNN() {

@@ -4,6 +4,10 @@ double TANH(double val) {
     return tanh(val);
 }
 
+double EXP(double val) {
+    return exp(val);
+}
+
 //matrix multiplicaation
 RowVector MMULT(RowVector A, Matrix B) {
     RowVector ret(A.data.size());
@@ -35,6 +39,14 @@ void SMUL(Matrix * A, double D) {
             A->data[i][j] *= D;
 }
 
+Matrix SMUL(Matrix A, double D) {
+    for (int i = 0; i < A.data.size(); i++)
+        for (int j = 0; j < A.data[0].size(); i++)
+            A.data[i][j] *= D;
+    return A;
+}
+
+
 std::variant<Matrix, double> DPROD(Matrix & A, Matrix & B) {
     //regular dprod stuff
     auto ret = Matrix(A.data.size(), B.data[0].size());
@@ -57,6 +69,15 @@ std::variant<Matrix, double> DPROD(Matrix * A, Matrix & B) {
             for (int k = 0; k < A->data[0].size(); ++k)
                 ret.data[i][j] += A->data[i][k] * B.data[k][j];
     return ret.data.size() == 1 && ret.data[0].size() == 1 ? ret.data[0][0] : ret;
+}
+
+//Finds the sum of all elements in a matrix of any dimensionality
+double MTOTSUM(Matrix A) {
+    double ret = 0;
+    for (auto row : A.data)
+        for (auto ele : row)
+            ret += ele;
+    return ret;
 }
 
 Matrix MSUM(Matrix A, Matrix B) {
