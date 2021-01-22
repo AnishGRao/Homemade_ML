@@ -84,13 +84,13 @@ public:
     }
     Matrix & operator= (const Matrix & other) {
         if (this->data != other.data) {
-            this->data = other.data;
+            data = other.data;
         }
         return *this;
     }
     Matrix & operator= (const Matrix * other) {
         if (this->data != other->data) {
-            this->data = other->data;
+            data = other->data;
         }
         return *this;
     }
@@ -129,10 +129,10 @@ public:
                 data[i][j] = 0;
     }
     Matrix transpose() {
-        Matrix ret(this->data.size(), this->data[0].size());
-        for (int i = 0; i < this->data[0].size(); ++i)
-            for (int j = 0; j < this->data.size(); ++j)
-                ret.data[i][j] = this->data[i][j];
+        Matrix ret(this->data[0].size(), this->data.size());
+        for (int i = 0; i < this->data.size(); ++i)
+            for (int j = 0; j < this->data[0].size(); ++j)
+                ret.data[j][i] = this->data[i][j];
         return ret;
     }
 
