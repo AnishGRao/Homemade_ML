@@ -11,7 +11,8 @@ class RNN {
     Matrix * weight_hidden_time;
     Matrix * bias_hidden;
     Matrix * bias_y;
-
+    std::random_device rd;
+    std::mt19937 e2;
 
 
     void set_consts() {
@@ -29,6 +30,8 @@ class RNN {
             char_to_num[chars[i]] = i, num_to_char[i] = chars[i];
     }
     void model_parameters() {
+        std::mt19937 e3(this->rd());
+        e2 = e3;
         this->weight_x_hidden = new Matrix(hidden_size, vocab_size);
         this->weight_x_hidden->setRandom();
         SMUL(weight_x_hidden, .01);
@@ -46,8 +49,8 @@ class RNN {
         this->bias_y = new Matrix(vocab_size, 1);
         this->bias_y->setZero();
     }
-
-    void loss(std::vector <int> & inputs, std::vector<int> & targets, Matrix & hprev) {
+    double loss(std::vector <int> & inputs, std::vector<int> & targets, Matrix & hprev,
+        Matrix ** dweighthh, Matrix ** dweightxh, Matrix ** dweightyh, Matrix ** dbiasy, Matrix ** dbiash) {
         std::unordered_map<int, Matrix *> xs = {}, hs = {}, ys = {}, ps = {};
         hs[-1] = new Matrix(hprev);
         double loss = 0, temp_val;
@@ -56,90 +59,46 @@ class RNN {
             xs[t] = new Matrix(vocab_size, 1);
             xs[t]->setZero();
             xs[t]->data[inputs[t]][0] = 1;
-            //std::cout << hs[-1].data.size() << "\t" << hs[-1].data[0].size() << "\n";
-            //std::cout << weight_hidden_time.data.size() << "\t" << weight_hidden_time.data[0].size() << "\n";
-            //std::cout << weight_y_hidden.data.size() << "\t" << weight_y_hidden.data[0].size() << "\n";
-            //std::cout << xs[t].data.size() << "\t" << xs[t].data[0].size() << "\n";
-            //std::cout << weight_x_hidden.data.size() << "\t" << weight_x_hidden.data[0].size() << "\n";
-            //hidden state
-            //auto A = MDPROD(weight_x_hidden, xs[t]);
-            //auto B = MDPROD(weight_hidden_time, hs[t - 1]);
-            //auto C = MSUM(A, B);
-            //auto D = MSUM(C, bias_hidden);
-            //auto E = MAPPLY(D, &TANH);
             hs[t] = new Matrix(MAPPLY(MSUM(MSUM(MDPROD(weight_x_hidden, xs[t]), MDPROD(weight_hidden_time, hs[t - 1])), bias_hidden), &TANH));
-            //std::cout << weight_y_hidden->data.size() << "\t" << weight_y_hidden->data[0].size() << "\n";
-            //std::cout << hs[t]->data.size() << "\t" << hs[t]->data[0].size() << "\n";
-
             ys[t] = new Matrix(MDPROD(weight_y_hidden, hs[t]));
-            //std::cout << ys[t]->data.size() << "\t" << ys[t]->data[0].size() << "\n";
-
             ps[t] = new Matrix(SMUL(MAPPLY(ys[t], &EXP), 1 / (MTOTSUM(MAPPLY(ys[t], &EXP)))));
-
-            //std::cout << ps[t]->data.size() << "\t" << ps[t]->data[0].size() << "\n";
-            //TODO check if nat log
-            //exit(0);
             loss += -log(ps[t]->data[targets[t]][0]);
         }
-        Matrix * dweightxh = new Matrix(weight_x_hidden), * dweightyh = new Matrix(weight_y_hidden),
-            * dweighthh = new Matrix(weight_hidden_time), * dbiash = new Matrix(bias_hidden),
-            * dbiasy = new Matrix(bias_y), * dhnext = new Matrix(hs[0]);
-        dweighthh->setZero(), dweightxh->setZero(), dweightyh->setZero();
-        dbiash->setZero(), dbiasy->setZero();
+        Matrix * dhnext = new Matrix(hs[0]);
         dhnext->setZero();
         for (int t = inputs.size() - 1; t >= 0; t--) {
             auto temp_dy = new Matrix(ps[t]);
-            //add -1 to all points in ps[t][targets[t]]'s copy
-            //std::cout << temp_dy->data.size() << "\t" << temp_dy->data[0].size() << "\n";
-
             MSROWOP(&temp_dy, targets[t], 1, -1);
-            //std::cout << temp_dy->data.size() << "\t" << temp_dy->data[0].size() << "\n\n\n";
-
-            //auto L = hs[t]->transpose();
-            //int ck = 0;
-            //std::cout << hs[t]->data.size() << "\t" << hs[t]->data[0].size() << "\n";
-            //for (auto i : hs[t]->data) {
-            //    for (auto j : i) {
-            //        std::cout << j << "\t";
-            //    }
-            //    std::cout << std::endl;
-            //}
-            //std::cout << std::endl << "\n\n\n";
-            //std::cout << hs[t]->transpose().data.size() << "\t" << hs[t]->transpose().data[0].size() << "\n";
-            //ck = 0;
-            //for (auto i : L.data) {
-            //    for (auto j : i) {
-            //        std::cout << j << "\t";
-            //    }
-            //    std::cout << std::endl;
-            //}
-            //exit(0);
-            //std::cout << temp_dy->data.size() << "\t" << temp_dy->data[0].size() << "\n";
-            //std::cout << hs[t]->transpose().data.size() << "\t" << hs[t]->transpose().data[0].size() << "\n";
-            * dweightyh = MSUM(*dweightyh, MDPROD(temp_dy, hs[t]->transpose()));
-            *dbiasy = MSUM(*dbiasy, *temp_dy);
-            //auto A = weight_y_hidden->transpose();
-            //std::cout << A.data.size() << "\t" << A.data[0].size() << "\n";
-            //std::cout << temp_dy->data.size() << "\t" << temp_dy->data[0].size() << "\n";
-            //auto B = MDPROD(A, *temp_dy);
-            //auto C = MSUM(B, dhnext);
-            //std::cout << weight_y_hidden->data.size() << "\t" << weight_y_hidden->data[0].size() << "\n";
-            //std::cout << temp_dy->data.size() << "\t" << temp_dy->data[0].size() << "\n";
-
+            **dweightyh = MSUM(**dweightyh, MDPROD(temp_dy, hs[t]->transpose()));
+            **dbiasy = MSUM(**dbiasy, *temp_dy);
             auto temp_dh = new Matrix(MSUM(MDPROD(weight_y_hidden->transpose(), *temp_dy), dhnext));
-            //std::cout << hs[t]->data.size() << "\t" << hs[t]->data[0].size() << "\n";
             auto temp_dhraw = new Matrix(NAIVEMUL(MSOP(NAIVEMUL(*hs[t], *hs[t]), -1, 1), *temp_dh));
-            *dbiash = MSUM(*temp_dhraw, *dbiash);
-            *dweightxh = MSUM(*dweightxh, MDPROD(temp_dhraw, xs[t]->transpose()));
-            *dweighthh = MSUM(*dweighthh, MDPROD(temp_dhraw, hs[t - 1]->transpose()));
+            **dbiash = MSUM(*temp_dhraw, *dbiash);
+            **dweightxh = MSUM(**dweightxh, MDPROD(temp_dhraw, xs[t]->transpose()));
+            **dweighthh = MSUM(**dweighthh, MDPROD(temp_dhraw, hs[t - 1]->transpose()));
             *dhnext = MDPROD(weight_hidden_time->transpose(), temp_dhraw);
         }
-
-
+        CLIP(**dweighthh, -5, 5);
+        CLIP(**dweightxh, -5, 5);
+        CLIP(**dweightyh, -5, 5);
+        CLIP(**dbiash, -5, 5);
+        CLIP(**dbiasy, -5, 5);
+        return loss;
     }
-    void init_RNN() {
-
-
+    void sample(Matrix ** h, int seed, int n, std::vector<int> & sample_ix) {
+        auto x = new Matrix(vocab_size, 1);
+        x->setZero();
+        x->data[seed][0] = 1;
+        for (int t = 0; t < n; t++) {
+            **h = MAPPLY(MSUM(MDPROD(weight_x_hidden, x), MDPROD(weight_hidden_time, *h)), &TANH);
+            auto y = MSUM(MDPROD(weight_y_hidden, *h), bias_y);
+            auto f = FLATTEN(SMUL(MAPPLY(y, &EXP), 1.0 / MTOTSUM(MAPPLY(y, &EXP))));
+            std::discrete_distribution<> d(f.begin(), f.end());
+            auto k = d(e2);
+            x->setZero();
+            x->data[k][0] = 1;
+            sample_ix.push_back(k);
+        }
     }
 public:
     RNN(std::vector<char> & data, std::vector<char> & chars) {
@@ -151,18 +110,23 @@ public:
         create_maps();
         model_parameters();
         int n = 0, p = 0;
+
         auto mwxh = new Matrix(weight_x_hidden), mwhh = new Matrix(weight_hidden_time), mwhy = new Matrix(weight_y_hidden),
-            mbh = new Matrix(bias_hidden), mby = new Matrix(bias_y);
+            mbh = new Matrix(bias_hidden), mby = new Matrix(bias_y), dweightxh = new Matrix(weight_x_hidden),
+            dweightyh = new Matrix(weight_y_hidden), dweighthh = new Matrix(weight_hidden_time), dbiash = new Matrix(bias_hidden),
+            dbiasy = new Matrix(bias_y);
+
         mwxh->setZero(), mwhy->setZero(), mwhh->setZero(), mbh->setZero(), mby->setZero();
         auto smooth_loss = -log(1.0 / vocab_size) * seq_length;
         auto hprev = new Matrix();
-        std::vector<int> inputs, targets;
-        while (1)
+        std::string printer;
+        std::vector<int> inputs, targets, sample_ix;
+
+        while (true)
         {
             if (p + seq_length + 1 >= data.size() || n == 0)
             {
                 hprev = new Matrix(hidden_size, 1);
-                hprev->setZero();
                 p = 0;
             }
             for (auto ch = data.begin() + p; ch != data.begin() + p + seq_length; ch++)
@@ -175,9 +139,39 @@ public:
             }
             if (n % 100 == 0)
             {
-                ;//do stuff TODO
+                sample(&hprev, inputs[0], 200, sample_ix);
+                for (auto ix : sample_ix)
+                    printer += num_to_char[ix];
+                std::cout << "----\n " << printer << "\n----\n";
+                //do stuff TODO
             }
-            loss(inputs, targets, *hprev);
+            dweighthh->setZero(), dweightxh->setZero(), dweightyh->setZero();
+            dbiash->setZero(), dbiasy->setZero();
+            auto _loss = loss(inputs, targets, *hprev, &dweighthh, &dweightxh, &dweightyh, &dbiasy, &dbiash);
+            smooth_loss = smooth_loss * .999 + _loss * .001;
+            if (n % 100) {
+                std::cout << "Iteration " << n << ", Loss: " << smooth_loss << "\n";
+            }
+
+            //adagrad updates
+
+            *mwxh = MSUM(*mwxh, NAIVEMUL(dweightxh, dweightxh));
+            *weight_x_hidden = MSUM(*weight_x_hidden, NAIVEMUL(SMUL(*dweightxh, -lr), MAPPLY(MAPPLY(MADD(mwxh, 1e-8), &SQRT), &INVERT)));
+
+            *mwhh = MSUM(*mwhh, NAIVEMUL(dweighthh, dweighthh));
+            *weight_hidden_time = MSUM(*weight_hidden_time, NAIVEMUL(SMUL(*dweighthh, -lr), MAPPLY(MAPPLY(MADD(mwhh, 1e-8), &SQRT), &INVERT)));
+
+            *mwhy = MSUM(*mwhy, NAIVEMUL(dweightyh, dweightyh));
+            *weight_y_hidden = MSUM(*weight_y_hidden, NAIVEMUL(SMUL(*dweightyh, -lr), MAPPLY(MAPPLY(MADD(mwhy, 1e-8), &SQRT), &INVERT)));
+
+            *mbh = MSUM(*mbh, NAIVEMUL(dbiash, dbiash));
+            *bias_hidden = MSUM(*bias_hidden, NAIVEMUL(SMUL(*dbiash, -lr), MAPPLY(MAPPLY(MADD(mbh, 1e-8), &SQRT), &INVERT)));
+
+            *mby = MSUM(*mby, NAIVEMUL(dbiasy, dbiasy));
+            *bias_y = MSUM(*bias_y, NAIVEMUL(SMUL(*dbiasy, -lr), MAPPLY(MAPPLY(MADD(mby, 1e-8), &SQRT), &INVERT)));
+
+            p += seq_length;
+            n += 1;
         }
 
 

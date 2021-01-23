@@ -1,6 +1,6 @@
 #include "operations.h"
 
-void ReadFileChars(std::string filename, std::vector<char> & data, std::vector<char> & chars) {
+void ReadFileChars(char * filename, std::vector<char> & data, std::vector<char> & chars) {
     data.clear();
     chars.clear();
     std::ifstream file(filename);
@@ -15,7 +15,7 @@ void ReadFileChars(std::string filename, std::vector<char> & data, std::vector<c
 void ReadCsv(std::string filename, std::vector<RowVector *> & data) {
     //if there are multi-passes
     data.clear();
-    std::ifstream file(filename);
+    std::ifstream file(filename.c_str());
     std::string line, element;
     std::getline(file, line, '\n');
     std::stringstream ss(line);
