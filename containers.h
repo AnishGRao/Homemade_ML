@@ -3,7 +3,11 @@
 #include <math.h>
 #include <cmath>
 #include <thread>
+#include <time.h>
+#include <functional> 
+#include <stdio.h>
 #include <variant>
+#include <chrono>
 #define ANISHDEBUG
 
 //always going to be updated

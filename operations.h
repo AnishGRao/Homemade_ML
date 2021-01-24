@@ -47,21 +47,37 @@ RowVector MSUB(RowVector A, RowVector B) {
 
 //scalar-matrix multiplication
 void SMUL(Matrix * A, double D) {
+    /*
     for (int i = 0; i < A->data.size(); i++)
         for (int j = 0; j < A->data[0].size(); j++)
             A->data[i][j] *= D;
+    */
+
+    std::vector<std::thread> workers;
+    for (int i = 0; i < A->data.size(); i++)
+        workers.push_back(std::thread([&]()
+            {
+                std::transform(A->data[i].begin(), A->data[i].end(), A->data[i].begin(),
+                    std::bind(std::multiplies<double>(), std::placeholders::_1, D));
+            }
+    ));
+    std::for_each(workers.begin(), workers.end(), [](std::thread & t) {
+        while (!t.joinable())
+            ;
+        t.join();
+    });
 }
 
 Matrix SMUL(Matrix A, double D) {
     for (int i = 0; i < A.data.size(); i++)
-        for (int j = 0; j < A.data[0].size(); j++)
-            A.data[i][j] *= D;
+        std::transform(A.data[i].begin(), A.data[i].end(), A.data[i].begin(),
+                   std::bind(std::multiplies<double>(), std::placeholders::_1, D));
     return A;
 }
 
 double SCALARDPROD(Matrix A, Matrix B) {
     auto ret = Matrix(A.data.size(), B.data[0].size());
-    ret.setZero();
+    //ret.setZero();
     //go through A's rows
     for (int i = 0; i < A.data.size(); i++)
         for (int j = 0; j < B.data[0].size(); j++)

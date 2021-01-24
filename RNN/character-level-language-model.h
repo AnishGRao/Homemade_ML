@@ -22,7 +22,7 @@ class RNN {
         //hyperparameters--try changing them and see what happens!
         hidden_size = 100;
         seq_length = 25;
-        lr = .1;
+        lr = .2;
     }
     void create_maps() {
         //create two maps--one that maps from a character to a number, and another that does the opposite
@@ -271,6 +271,7 @@ public:
                 if (_by.joinable())
                     _by.join(), join_counter--;
             }
+
             p += seq_length;
             n += 1;
             //clear these, so that we dont just keep adding to them.
