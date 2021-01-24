@@ -2,6 +2,7 @@
 #include <random>
 #include <math.h>
 #include <cmath>
+#include <thread>
 #include <variant>
 #define ANISHDEBUG
 
@@ -100,15 +101,24 @@ public:
         //auto cRow = pick<row>(arg0, arg1);
         //auto cCol = pick<col>(arg0, arg1);
         //if (cCol == -1 && cRow == -1) {
-        std::random_device mch;
-        std::default_random_engine generator(mch());
-        std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+        std::default_random_engine generator;
+        std::normal_distribution<double> distribution(0, 1.0);
         for (int i = 0; i < this->data.size(); i++)
             for (int j = 0; j < this->data[0].size(); j++) {
                 this->data[i][j] = distribution(generator);
             }
-        //}
-        //TODO add in the functionality for setzero for indiv. rows and cols.
+    }
+
+    void setRandom(double val) {
+        //auto cRow = pick<row>(arg0, arg1);
+        //auto cCol = pick<col>(arg0, arg1);
+        //if (cCol == -1 && cRow == -1) {
+        std::default_random_engine generator;
+        std::normal_distribution<double> distribution(0, 1.0);
+        for (int i = 0; i < this->data.size(); i++)
+            for (int j = 0; j < this->data[0].size(); j++) {
+                this->data[i][j] = distribution(generator) * val;
+            }
     }
 
     void setZero(ele element) {
